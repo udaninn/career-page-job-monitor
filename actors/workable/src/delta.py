@@ -195,9 +195,52 @@ class DeltaTracker:
             rows.append(row)
         return rows
 
+    def _movement(self) -> tuple[int, int]:
+        """(opened, closed) for this run, derived from the two snapshots."""
+        opened = sum(1 for gid in self.current if gid not in self.previous)
+        shut = sum(1 for gid in self.previous if gid not in self.current)
+        return opened, shut
+
+    async def report_if_quiet(self) -> bool:
+        """Emit one row when a delta run has nothing to report.
+
+        A delta run that finds no movement writes no rows at all, and an empty
+        dataset is indistinguishable from a run that crashed, was pointed at
+        the wrong company, or silently returned garbage. The caller sees an
+        empty table and concludes the Actor is broken - which is exactly the
+        failure this project documents in other people's APIs, so it has no
+        business shipping it in its own.
+
+        One row is cheap and turns "no idea" into "no news".
+        """
+        if not self.enabled or self.is_baseline:
+            return False
+        opened, shut = self._movement()
+        if opened or shut:
+            return False
+        await Actor.push_data({
+            "recordType": "noChanges",
+            "companyName": "(no changes)",
+            "title": "No new or closed roles since the last run",
+            "hint": (
+                "This run succeeded. %d job(s) were checked and none opened or "
+                "closed since the previous run, so there is nothing to report. "
+                "Set 'onlyNewSinceLastRun' to false if you want the full board "
+                "returned on every run instead of just the changes."
+                % len(self.current)
+            ),
+        })
+        return True
+
     async def save(self) -> None:
         if not self.enabled or self._store is None:
             return
+        try:
+            await self.report_if_quiet()
+        except Exception as exc:  # noqa: BLE001 - never fail a delivered run
+            Actor.log.debug(
+                "no-change notice skipped: %s" % type(exc).__name__
+            )
         try:
             await self._store.set_value(
                 self.key,
