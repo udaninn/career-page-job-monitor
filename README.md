@@ -243,3 +243,7 @@ The full method for each platform, including the traps that cost the most time:
 - [Six ATS platforms publish their job boards as open JSON](https://dev.to/udaninn/six-ats-platforms-publish-their-job-boards-as-open-json-here-are-the-endpoints-2d3k)
 - [Workday job boards have a JSON API too](https://dev.to/udaninn/workday-job-boards-have-a-json-api-too-its-just-better-hidden-23fl)
 - [Telling which ATS a company uses from its careers URL](https://dev.to/udaninn/you-can-tell-which-ats-a-company-uses-by-looking-at-its-careers-url-3i5g)
+
+## Not a job board, same approach
+
+- [pdf-table-extractor](https://apify.com/practical_ophthalmologist_iuq/pdf-table-extractor) - pull tables out of PDFs into JSON, CSV, Markdown and Excel-ready rows, with empty cells kept as `null` so columns stay aligned ([Python](https://apify.com/practical_ophthalmologist_iuq/pdf-table-extractor/api/python) | [JavaScript](https://apify.com/practical_ophthalmologist_iuq/pdf-table-extractor/api/javascript))
